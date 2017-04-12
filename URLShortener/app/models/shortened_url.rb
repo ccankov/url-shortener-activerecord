@@ -2,6 +2,8 @@ class ShortenedUrl < ApplicationRecord
   validates :short_url, presence: true, uniqueness: true
   validates :long_url, presence: true
   validates :user_id, presence: true
+  validate :no_spamming
+  validate :nonpremium_max
 
   belongs_to :submitter,
     primary_key: :id,
@@ -61,5 +63,23 @@ class ShortenedUrl < ApplicationRecord
     dv = self.distinct_visitors
     recent_dv = dv.where(updated_at: (10.minutes.ago..Time.now))
     recent_dv.length
+  end
+
+  private
+
+  def no_spamming
+    urls = ShortenedUrl.where(user_id: user_id)
+    recent_urls = urls.where(created_at: (1.minutes.ago..Time.now))
+    if recent_urls.length >= 5
+      errors[:user_id] << "Dude...stop spamming"
+    end
+  end
+
+  def nonpremium_max
+    urls = ShortenedUrl.where(user_id: user_id)
+    user = User.find_by(id: user_id)
+    if urls.length >= 5 && !user.premium
+      errors[:user_id] << "You need to pay $$$$"
+    end
   end
 end
