@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+loop do
+  begin
+    puts "Hello, User! Please enter your e-mail to login"
+    email = gets.chomp
+    user = User.find_by(email: email)
+    raise unless user
+  rescue
+    puts 'Not a registered user'
+    retry
+  end
+  puts "Hello #{email}!"
+
+
+  puts "Would you like to visit or create a URL? (v)isit/(c)reate"
+  ans = gets.chomp
+  case ans
+  when 'v'
+    ShortenedUrl.all.each do |url|
+      puts "#{url.id}: #{url.short_url} #{url.long_url}"
+    end
+    puts "Please provide the id of the url you'd like to visit."
+    url_to_visit = gets.chomp
+    url = ShortenedUrl.find_by(id: url_to_visit)
+    Launchy.open( "#{url.long_url}")
+    Visit.record_visit!(user, url)
+  when 'c'
+    puts "Type the URL that you want to shorten."
+    long_url = gets.chomp
+    shortened_url = ShortenedUrl.create!(long_url, user)
+    puts shortened_url.short_url
+  else
+    puts "Invalid input"
+  end
+end
