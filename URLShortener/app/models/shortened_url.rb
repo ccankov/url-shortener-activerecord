@@ -8,6 +8,20 @@ class ShortenedUrl < ApplicationRecord
     foreign_key: :user_id,
     class_name: 'User'
 
+  has_many :visits,
+    primary_key: :id,
+    foreign_key: :short_url_id,
+    class_name: 'Visit'
+
+  has_many :visitors,
+    through: :visits,
+    source: :visitor
+
+  has_many :distinct_visitors,
+    -> { distinct },
+    through: :visits,
+    source: :visitor
+
   def self.random_code
     code = SecureRandom::urlsafe_base64
     while ShortenedUrl.exists?(short_url: code)
@@ -24,5 +38,19 @@ class ShortenedUrl < ApplicationRecord
     )
     url.save
     url
+  end
+
+  def num_clicks
+    self.visits.length
+  end
+
+  def num_uniques
+    self.distinct_visitors.length
+  end
+
+  def num_recent_uniques
+    dv = self.distinct_visitors
+    recent_dv = dv.where(updated_at: (10.minutes.ago..Time.now))
+    recent_dv.length
   end
 end
