@@ -23,3 +23,13 @@ google_search = Tagging.create(url_id: google.id, topic_id: search.id)
 duckduckgo_search = Tagging.create(url_id: duckduckgo.id, topic_id: search.id)
 cnn_news = Tagging.create(url_id: cnn.id, topic_id: news.id)
 espn_sports = Tagging.create(url_id: espn.id, topic_id: sports.id)
+
+u1 = User.create!(email: "jefferson@cats.com", premium: true)
+u2 = User.create!(email: "muenster@cats.com")
+
+su1 = ShortenedUrl.create!("www.boxes.com", u1)
+su2 = ShortenedUrl.create!("www.meowmix.com", u2)
+su3 = ShortenedUrl.create!("www.smallrodents.com", u2)
+
+v1 = Visit.create!(user_id: u1.id, short_url_id: su1.id)
+v2 = Visit.create!(user_id: u1.id, short_url_id: su2.id)

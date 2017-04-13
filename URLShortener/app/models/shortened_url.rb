@@ -51,6 +51,26 @@ class ShortenedUrl < ApplicationRecord
     url
   end
 
+  # n minutes
+  def self.prune(n)
+    stale_urls = ShortenedUrl.joins(
+      'LEFT JOIN
+        (
+          SELECT
+            short_url_id, MAX(updated_at) as most_recent_visit
+          FROM
+            visits
+          GROUP BY short_url_id
+        ) as recent_visits ON shortened_urls.id = recent_visits.short_url_id'
+    ).where(
+      "(most_recent_visit < ? OR (most_recent_visit IS NULL AND shortened_urls.updated_at < ?))",
+      n.minutes.ago,
+      n.minutes.ago
+    )
+
+    ShortenedUrl.destroy(stale_urls)
+  end
+
   def num_clicks
     self.visits.length
   end
