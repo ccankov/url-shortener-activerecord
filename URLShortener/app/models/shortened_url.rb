@@ -66,9 +66,7 @@ class ShortenedUrl < ApplicationRecord
       "(most_recent_visit < ? OR (most_recent_visit IS NULL AND shortened_urls.updated_at < ?))",
       n.minutes.ago,
       n.minutes.ago
-    )
-
-    ShortenedUrl.destroy(stale_urls)
+    ).destroy_all
   end
 
   def num_clicks
